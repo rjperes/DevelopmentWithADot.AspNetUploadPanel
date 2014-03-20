@@ -46,8 +46,8 @@
 </head>
 <body>
 	<form runat="server">
-		<asp:ScriptManager runat="server" /><
-		<web:UploadPanel runat="server" ID="uploadPanel" OnBeforeUpload="onBeforeUpload" OnUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" style="width:300px; height:300px; border:solid 1px;"/>
+		<asp:ScriptManager runat="server" />
+		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="10" OnBeforeUpload="onBeforeUpload" OnUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" style="width:300px; height:300px; border:solid 1px;"/>
 	</form>
 </body>
 </html>

@@ -103,6 +103,20 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			set;
 		}
 
+		[DefaultValue(null)]
+		public Int32? MaximumLength
+		{
+			get;
+			set;
+		}
+
+		[DefaultValue(null)]
+		public Int32? MaximumFiles
+		{
+			get;
+			set;
+		}
+
 		[TypeConverter(typeof(StringArrayConverter))]
 		public String[] ContentTypes
 		{
@@ -115,23 +129,62 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			StringBuilder script = new StringBuilder();			
 			script.AppendFormat("document.getElementById('{0}').addEventListener('drop', function(event) {{\n", this.ClientID);
 
+			if (this.MaximumFiles != null)
+			{
+				script.AppendFormat("if (event.dataTransfer.files.length > {0})\n", this.MaximumFiles.Value);
+				script.Append("{\n");
+
+				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
+				{
+					script.AppendFormat("{0}(event);\n", this.OnValidationFailure);
+				}
+
+				script.Append("event.returnValue = false;\n");
+				script.Append("return(false);\n");
+				script.Append("}\n");
+			}
+
+			if (this.MaximumLength != null)
+			{
+				script.Append("var lengthOk = true;\n");
+				script.Append("for (var i = 0; i < event.dataTransfer.files.length; ++i)\n");
+				script.Append("{\n");
+				script.AppendFormat("if (event.dataTransfer.files[i].size > {0})\n", this.MaximumLength.Value);
+				script.Append("{\n");
+				script.Append("lengthOk = false;\n");
+				script.Append("break;\n");
+				script.Append("}\n");
+				script.Append("}\n");
+				script.Append("if (lengthOk == false)\n");
+				script.Append("{\n");
+
+				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
+				{
+					script.AppendFormat("{0}(event);\n", this.OnValidationFailure);
+				}
+
+				script.Append("event.returnValue = false;\n");
+				script.Append("return(false);\n");
+				script.Append("}\n");
+			}
+
 			if (this.ContentTypes.Any() == true)
 			{
 				script.Append("for (var i = 0; i < event.dataTransfer.files.length; ++i)\n");
 				script.Append("{\n");
-				script.Append("var ok = false;\n");
+				script.Append("var contentTypeOk = false;\n");
 
 				foreach (var contentType in this.ContentTypes.Select(x => x.ToLower()).Distinct())
 				{
 					script.AppendFormat("if (event.dataTransfer.files[i].type.toLowerCase() == '{0}')\n", contentType);
 					script.Append("{\n");
-					script.Append("ok = true;\n");
+					script.Append("contentTypeOk = true;\n");
 					script.Append("break;\n");
 					script.Append("}\n");
 				}
 
 				script.Append("}\n");
-				script.Append("if (ok == false)\n");
+				script.Append("if (contentTypeOk == false)\n");
 				script.Append("{\n");
 
 				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
