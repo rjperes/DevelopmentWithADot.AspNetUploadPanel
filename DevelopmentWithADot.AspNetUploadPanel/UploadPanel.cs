@@ -1,43 +1,12 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace DevelopmentWithADot.AspNetUploadPanel
-{
-	[Serializable]
-	public sealed class UploadEventArgs : EventArgs
-	{
-		public UploadEventArgs(HttpFileCollection files, NameValueCollection form)
-		{
-			this.Files = files;
-			this.Response = String.Empty;
-			this.Form = form;
-		}
-
-		public String Response
-		{
-			get;
-			set;
-		}
-
-		public NameValueCollection Form
-		{
-			get;
-			private set;
-		}
-
-		public HttpFileCollection Files
-		{
-			get;
-			private set;
-		}		
-	}
-
+{	
 	public class UploadPanel : Panel, ICallbackEventHandler
 	{
 		public UploadPanel()
@@ -45,8 +14,8 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			this.ContentTypes = new String[0];
 			this.OnUploadFailure = "function(event){}";
 			this.OnUploadSuccess = "function(event){}";
-			this.OnValidationFailure = "function(event){}";
-			this.OnBeforeUpload = "function(event){}";
+			this.OnValidationFailure = "function(event, error){}";
+			this.OnBeforeUpload = "function(event){ return(true); }";
 			this.OnUploadComplete = "function(event){}";
 			this.OnUploadProgress = "function(event){}";
 			this.OnUploadCanceled = "function(event){}";
@@ -136,10 +105,11 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 
 				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
 				{
-					script.AppendFormat("{0}(event);\n", this.OnValidationFailure);
+					script.AppendFormat("{0}(event, 0);\n", this.OnValidationFailure);
 				}
 
 				script.Append("event.returnValue = false;\n");
+				script.Append("event.preventDefault();\n");
 				script.Append("return(false);\n");
 				script.Append("}\n");
 			}
@@ -160,10 +130,11 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 
 				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
 				{
-					script.AppendFormat("{0}(event);\n", this.OnValidationFailure);
+					script.AppendFormat("{0}(event, 1);\n", this.OnValidationFailure);
 				}
 
 				script.Append("event.returnValue = false;\n");
+				script.Append("event.preventDefault();\n");
 				script.Append("return(false);\n");
 				script.Append("}\n");
 			}
@@ -189,10 +160,11 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 
 				if (String.IsNullOrWhiteSpace(this.OnValidationFailure) == false)
 				{
-					script.AppendFormat("{0}(event);\n", this.OnValidationFailure);
+					script.AppendFormat("{0}(event, 2);\n", this.OnValidationFailure);
 				}
 
 				script.Append("event.returnValue = false;\n");
+				script.Append("event.preventDefault();\n");
 				script.Append("return(false);\n");
 				script.Append("}\n");
 			}
@@ -204,6 +176,7 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 				script.AppendFormat("if ({0}(event) == false)\n", this.OnBeforeUpload);
 				script.Append("{\n");
 				script.Append("event.returnValue = false;\n");
+				script.Append("event.preventDefault();\n");
 				script.Append("return(false);\n");
 				script.Append("}\n");
 			}
@@ -256,6 +229,7 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			script.Append("}\n");
 			script.Append("xhr.send(data);\n");
 			script.Append("event.returnValue = false;\n");
+			script.Append("event.preventDefault();\n");
 			script.Append("return (false);\n");
 			script.Append("});\n");
 			

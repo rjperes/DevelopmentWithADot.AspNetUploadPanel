@@ -37,8 +37,11 @@
 			debugger;
 		}
 
-		function onValidationFailure(event)
+		function onValidationFailure(event, error)
 		{
+			//error=0: maximum files
+			//error=1: maximum length
+			//error=2: content type
 			debugger;
 		}
 
@@ -47,7 +50,7 @@
 <body>
 	<form runat="server">
 		<asp:ScriptManager runat="server" />
-		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="10" OnBeforeUpload="onBeforeUpload" OnUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" style="width:300px; height:300px; border:solid 1px;"/>
+		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="text/plain,text/html" OnBeforeUpload="onBeforeUpload" OnUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" style="width:300px; height:300px; border:solid 1px;"/>
 	</form>
 </body>
 </html>
