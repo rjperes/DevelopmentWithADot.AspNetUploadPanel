@@ -12,7 +12,7 @@
 			return (true);
 		}
 
-		function onUploadCanceled(event)
+		function onUploadCancelled(event)
 		{
 			debugger;
 		}
@@ -50,7 +50,7 @@
 <body>
 	<form runat="server">
 		<asp:ScriptManager runat="server" />
-		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="text/plain,text/html" OnBeforeUpload="onBeforeUpload" OnUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" style="width:300px; height:300px; border:solid 1px;"/>
+		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="text/plain,text/html" OnBeforeUpload="onBeforeUpload" OnUploadCancelled="onUploadCancelled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" Style="width: 300px; height: 300px; border: solid 1px;" data-a="1" data-b="2" />
 	</form>
 </body>
 </html>
