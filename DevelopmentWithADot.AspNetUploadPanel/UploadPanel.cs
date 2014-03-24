@@ -9,6 +9,8 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 {	
 	public class UploadPanel : Panel, ICallbackEventHandler
 	{
+		private static readonly String [] MultimediaContentTypePrefixes = new String[]{ "image/", "audio/", "video/" };
+
 		public UploadPanel()
 		{
 			this.ContentTypes = new String[0];
@@ -18,10 +20,18 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			this.OnBeforeUpload = String.Empty;
 			this.OnUploadComplete = String.Empty;
 			this.OnUploadProgress = String.Empty;
-			this.OnUploadCancelled = String.Empty;
+			this.OnUploadCanceled = String.Empty;
+			this.OnPreviewFile = String.Empty;
 		}
 	
 		public event EventHandler<UploadEventArgs> Upload;
+
+		[DefaultValue("")]
+		public String OnPreviewFile
+		{
+			get;
+			set;
+		}
 
 		[DefaultValue("")]
 		public String OnBeforeUpload
@@ -31,7 +41,7 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 		}
 
 		[DefaultValue("")]
-		public String OnUploadCancelled
+		public String OnUploadCanceled
 		{
 			get;
 			set;
@@ -95,13 +105,15 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 
 		protected override void OnInit(EventArgs e)
 		{
-			if (ScriptManager.GetCurrent(this.Page) == null)
-			{
-				throw (new Exception("This control requires a ScriptManager on the page"));
-			}
-
 			var script = new StringBuilder();			
 			script.AppendFormat("document.getElementById('{0}').addEventListener('drop', function(event) {{\n", this.ClientID);
+
+			script.Append("if (event.dataTransfer.files.length == 0)\n");
+			script.Append("{\n");
+			script.Append("event.returnValue = false;\n");
+			script.Append("event.preventDefault();\n");
+			script.Append("return(false);\n");
+			script.Append("}\n");
 
 			if (this.MaximumFiles != null)
 			{
@@ -150,14 +162,10 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 				script.Append("{\n");
 				script.Append("var contentTypeOk = false;\n");
 
-				foreach (var contentType in this.ContentTypes.Select(x => x.ToLower()).Distinct())
-				{
-					script.AppendFormat("if (event.dataTransfer.files[i].type.toLowerCase() == '{0}')\n", contentType);
-					script.Append("{\n");
-					script.Append("contentTypeOk = true;\n");
-					script.Append("break;\n");
-					script.Append("}\n");
-				}
+				script.AppendFormat("if ({0})", String.Join(" || ", this.ContentTypes.Select(x => String.Format("(event.dataTransfer.files[i].type.toLowerCase().indexOf('{0}') == 0)", x.ToLower()))));
+				script.Append("{\n");
+				script.Append("contentTypeOk = true;\n");
+				script.Append("}\n");
 
 				script.Append("}\n");
 				script.Append("if (contentTypeOk == false)\n");
@@ -176,7 +184,8 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 
 			if (String.IsNullOrWhiteSpace(this.OnBeforeUpload) == false)
 			{
-				script.AppendFormat("if ({0}(event) == false)\n", this.OnBeforeUpload);
+				script.Append("var props = new Object();\n");
+				script.AppendFormat("if ({0}(event, props) == false)\n", this.OnBeforeUpload);
 				script.Append("{\n");
 				script.Append("event.returnValue = false;\n");
 				script.Append("event.preventDefault();\n");
@@ -187,15 +196,30 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			script.Append("var data = new FormData();\n");
 			script.Append("for (var i = 0; i < event.dataTransfer.files.length; ++i)\n");
 			script.Append("{\n");
-			script.Append("data.append('file' + i, event.dataTransfer.files[i]);\n");
+			script.Append("var file = event.dataTransfer.files[i];\n");
+			script.Append("data.append('file' + i, file);\n");
+
+			if (String.IsNullOrWhiteSpace(this.OnPreviewFile) == false)
+			{
+				script.AppendFormat("if ({0})", String.Join(" || ", MultimediaContentTypePrefixes.Select(x => String.Format("(file.type.toLowerCase().indexOf('{0}') == 0)", x.ToLower()))));
+				script.Append("{\n");
+				script.Append("var reader = new FileReader();\n");
+				script.Append("reader.onloadend = function(e)\n");
+				script.Append("{\n");
+				script.AppendFormat("{0}(file.name, reader.result);\n", this.OnPreviewFile);
+				script.Append("}\n");
+				script.Append("reader.readAsDataURL(file);\n");
+				script.Append("}\n");
+			}
+
 			script.Append("}\n");
 			script.AppendFormat("data.append('__CALLBACKID', '{0}');\n", this.ClientID);
 			script.Append("data.append('__CALLBACKPARAM', '');\n");
 			script.Append("data.append('__EVENTTARGET', '');\n");
 			script.Append("data.append('__EVENTARGUMENT', '');\n");
-			script.AppendFormat("for (var key in document.getElementById('{0}').dataset)\n", this.ClientID);
+			script.Append("for (var key in props)\n");
 			script.Append("{\n");
-			script.AppendFormat("data.append(key, document.getElementById('{0}').dataset[key]);\n", this.ClientID);
+			script.Append("data.append(key, props[key]);\n");
 			script.Append("}\n");
 			script.Append("var xhr = new XMLHttpRequest();\n");
 
@@ -207,11 +231,11 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 				script.Append("}\n");
 			}
 
-			if (String.IsNullOrWhiteSpace(this.OnUploadCancelled) == false)
+			if (String.IsNullOrWhiteSpace(this.OnUploadCanceled) == false)
 			{
 				script.Append("xhr.oncancel = function(e)\n");
 				script.Append("{\n");
-				script.AppendFormat("{0}(e);\n", this.OnUploadCancelled);
+				script.AppendFormat("{0}(e);\n", this.OnUploadCanceled);
 				script.Append("}\n");
 			}
 
@@ -236,11 +260,20 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			script.Append("event.preventDefault();\n");
 			script.Append("return (false);\n");
 			script.Append("});\n");
-			
-			this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "drop"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ {0} }});\n", script), true);
-			this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragenter"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ document.getElementById('{0}').addEventListener('dragenter', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }}); }});\n", this.ClientID), true);
-			this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragover"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ document.getElementById('{0}').addEventListener('dragover', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }}); }});\n", this.ClientID), true);
 
+			if (ScriptManager.GetCurrent(this.Page) == null)
+			{
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "drop"), script.ToString(), true);
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragenter"), String.Format("document.getElementById('{0}').addEventListener('dragenter', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }});\n", this.ClientID), true);
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragover"), String.Format("document.getElementById('{0}').addEventListener('dragover', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }});\n", this.ClientID), true);
+			}
+			else
+			{
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "drop"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ {0} }});\n", script), true);
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragenter"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ document.getElementById('{0}').addEventListener('dragenter', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }}); }});\n", this.ClientID), true);
+				this.Page.ClientScript.RegisterStartupScript(this.GetType(), String.Concat(this.UniqueID, "dragover"), String.Format("Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function() {{ document.getElementById('{0}').addEventListener('dragover', function(event){{ event.returnValue = false; event.preventDefault(); return(false); }}); }});\n", this.ClientID), true);
+			}
+			
 			base.OnInit(e);
 		}
 

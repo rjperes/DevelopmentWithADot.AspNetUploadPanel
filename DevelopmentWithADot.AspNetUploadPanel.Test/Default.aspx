@@ -5,14 +5,27 @@
 <head runat="server">
 	<title></title>
 	<script>
-		
-		function onBeforeUpload(event)
+
+		function onPreviewFile(name, url)
 		{
 			debugger;
+			name = name.toLowerCase();
+
+			if ((name.indexOf('.jpg') > 0) || (name.indexOf('.gif') > 0) || (name.indexOf('.png') > 0))
+			{
+				document.getElementById('preview').src = url;
+			}
+		}
+
+		function onBeforeUpload(event, props)
+		{
+			debugger;
+			props.a = 1;
+			props.b = 2;
 			return (true);
 		}
 
-		function onUploadCancelled(event)
+		function onUploadCanceled(event)
 		{
 			debugger;
 		}
@@ -39,9 +52,9 @@
 
 		function onValidationFailure(event, error)
 		{
-			//error=0: maximum files
-			//error=1: maximum length
-			//error=2: content type
+			//error=0: maximum files reached
+			//error=1: maximum file length reached
+			//error=2: invalid content type
 			debugger;
 		}
 
@@ -50,7 +63,8 @@
 <body>
 	<form runat="server">
 		<asp:ScriptManager runat="server" />
-		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="text/plain,text/html" OnBeforeUpload="onBeforeUpload" OnUploadCancelled="onUploadCancelled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" Style="width: 300px; height: 300px; border: solid 1px;" data-a="1" data-b="2" />
+		<img src="" alt="" id="preview" style="max-width:300px; max-height:300px;"/>
+		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="image/" OnPreviewFile="onPreviewFile" OnBeforeUpload="onBeforeUpload" onUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" Style="width: 300px; height: 300px; border: solid 1px;" />
 	</form>
 </body>
 </html>
