@@ -185,7 +185,7 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			if (String.IsNullOrWhiteSpace(this.OnBeforeUpload) == false)
 			{
 				script.Append("var props = new Object();\n");
-				script.AppendFormat("if ({0}(event, props) == false)\n", this.OnBeforeUpload);
+				script.AppendFormat("if ({0}(event, props) === false)\n", this.OnBeforeUpload);
 				script.Append("{\n");
 				script.Append("event.returnValue = false;\n");
 				script.Append("event.preventDefault();\n");
@@ -213,7 +213,7 @@ namespace DevelopmentWithADot.AspNetUploadPanel
 			}
 
 			script.Append("}\n");
-			script.AppendFormat("data.append('__CALLBACKID', '{0}');\n", this.ClientID);
+			script.AppendFormat("data.append('__CALLBACKID', '{0}');\n", this.UniqueID);
 			script.Append("data.append('__CALLBACKPARAM', '');\n");
 			script.Append("data.append('__EVENTTARGET', '');\n");
 			script.Append("data.append('__EVENTARGUMENT', '');\n");

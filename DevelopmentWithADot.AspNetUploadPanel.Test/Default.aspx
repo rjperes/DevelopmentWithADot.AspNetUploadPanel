@@ -64,7 +64,7 @@
 	<form runat="server">
 		<asp:ScriptManager runat="server" />
 		<img src="" alt="" id="preview" style="max-width:300px; max-height:300px;"/>
-		<web:UploadPanel runat="server" ID="uploadPanel" MaximumLength="1000000" ContentTypes="image/" OnPreviewFile="onPreviewFile" OnBeforeUpload="onBeforeUpload" onUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" Style="width: 300px; height: 300px; border: solid 1px;" />
+		<web:UploadPanel runat="server" ID="uploadPanel" MaximumFiles="2" MaximumLength="1000000" ContentTypes="image/" OnPreviewFile="onPreviewFile" OnBeforeUpload="onBeforeUpload" onUploadCanceled="onUploadCanceled" OnUploadComplete="onUploadComplete" OnUploadFailure="onUploadFailure" OnUploadProgress="onUploadProgress" OnUploadSuccess="onUploadSuccess" OnValidationFailure="onValidationFailure" OnUpload="OnUpload" Style="width: 300px; height: 300px; border: solid 1px;" />
 	</form>
 </body>
 </html>
